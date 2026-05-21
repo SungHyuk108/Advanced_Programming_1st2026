@@ -125,7 +125,11 @@ def load_image_jpg(path, scale=None):
 # 에셋 로드
 # =========================================================
 
-background_img = load_image(os.path.join(ASSETS_PATH, "background.png"), (SCREEN_WIDTH, SCREEN_HEIGHT))
+background_imgs = [
+    load_image(os.path.join(ASSETS_PATH, "morning_day.png"), (SCREEN_WIDTH, SCREEN_HEIGHT)),  # 0: 아침
+    load_image(os.path.join(ASSETS_PATH, "evening_day.png"), (SCREEN_WIDTH, SCREEN_HEIGHT)),  # 1: 저녁
+    load_image(os.path.join(ASSETS_PATH, "night_day.png"),   (SCREEN_WIDTH, SCREEN_HEIGHT)),  # 2: 밤
+]
 fisherman_img  = load_image(os.path.join(ASSETS_PATH, "fisherman.png"), (128, 128))
 shop_img       = load_image_jpg(os.path.join(ASSETS_PATH, "shop.jpg"), (SCREEN_WIDTH, SCREEN_HEIGHT))
 
@@ -352,6 +356,10 @@ class FishingGame:
         self.total_money  = 500
         self.max_inventory= 10
         self.discovered   = set()   # 도감: 발견한 물고기 이름 저장
+
+        # 배경 전환 시스템
+        self.bg_index   = 0   # 0: 아침, 1: 저녁, 2: 밤
+        self.cast_count = 0   # 낚시 시도 횟수 (3번마다 배경 전환)
 
         self.equipment = {
             "릴": 0, "낚싯바늘": 0, "낚싯줄": 0, "가방": 0,
@@ -582,6 +590,10 @@ class FishingGame:
             self.wait_time       = 0
             self.max_wait_time   = random.uniform(3, 6)
             self.splash_particles= []
+            # 낚시 시도 카운트 → 3번마다 배경 전환
+            self.cast_count += 1
+            if self.cast_count % 3 == 0:
+                self.bg_index = (self.bg_index + 1) % len(background_imgs)
         elif self.state == STATE_BITE:
             self.current_fish    = self.select_fish()
             self.fish_speed      = self.current_fish["speed"]
@@ -702,7 +714,7 @@ class FishingGame:
     # --------------------------------------------------
 
     def draw_background(self, screen):
-        screen.blit(background_img, (0, 0))
+        screen.blit(background_imgs[self.bg_index], (0, 0))
         pygame.draw.rect(screen, (120, 80, 45),  (290, 340, 100, 14))
         pygame.draw.rect(screen, (140, 95, 55),  (290, 340, 100, 4))
         pygame.draw.rect(screen, (90, 60, 35),   (290, 350, 100, 4))
