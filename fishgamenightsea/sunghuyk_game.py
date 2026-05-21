@@ -715,13 +715,6 @@ class FishingGame:
 
     def draw_background(self, screen):
         screen.blit(background_imgs[self.bg_index], (0, 0))
-        pygame.draw.rect(screen, (120, 80, 45),  (290, 340, 100, 14))
-        pygame.draw.rect(screen, (140, 95, 55),  (290, 340, 100, 4))
-        pygame.draw.rect(screen, (90, 60, 35),   (290, 350, 100, 4))
-        for px in [300, 340, 375]:
-            pygame.draw.rect(screen, (100, 70, 40),  (px, 354, 14, 50))
-            pygame.draw.rect(screen, (120, 85, 50),  (px, 354, 4,  50))
-            pygame.draw.rect(screen, (80, 55, 30),   (px + 10, 354, 4, 50))
         screen.blit(fisherman_img, (295, 205))
 
     # --------------------------------------------------
