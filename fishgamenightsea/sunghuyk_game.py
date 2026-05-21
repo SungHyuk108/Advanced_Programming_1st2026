@@ -128,8 +128,11 @@ def load_image_jpg(path, scale=None):
 background_imgs = [
     load_image(os.path.join(ASSETS_PATH, "morning_day.png"), (SCREEN_WIDTH, SCREEN_HEIGHT)),  # 0: 아침
     load_image(os.path.join(ASSETS_PATH, "evening_day.png"), (SCREEN_WIDTH, SCREEN_HEIGHT)),  # 1: 저녁
-    load_image(os.path.join(ASSETS_PATH, "night_day.png"),   (SCREEN_WIDTH, SCREEN_HEIGHT)),  # 2: 밤
+    load_image(os.path.join(ASSETS_PATH, "night_day.png"),   (SCREEN_WIDTH, SCREEN_HEIGHT)),  # 2: 밤    
 ]
+title_bg_img = load_image(
+    os.path.join(ASSETS_PATH, "background.png"), (SCREEN_WIDTH, SCREEN_HEIGHT))
+
 fisherman_img  = load_image(os.path.join(ASSETS_PATH, "fisherman.png"), (128, 128))
 shop_img       = load_image_jpg(os.path.join(ASSETS_PATH, "shop.jpg"), (SCREEN_WIDTH, SCREEN_HEIGHT))
 
@@ -685,7 +688,7 @@ class FishingGame:
     def draw_title(self, screen):
         global title_y, show_menu
 
-        screen.fill(BACKGROUND_COLOR)
+        screen.blit(title_bg_img, (0, 0))
 
         # 타이틀 내려오는 애니메이션
         if title_y < title_target_y:
