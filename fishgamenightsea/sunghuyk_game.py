@@ -128,11 +128,9 @@ def load_image_jpg(path, scale=None):
 background_imgs = [
     load_image(os.path.join(ASSETS_PATH, "morning_day.png"), (SCREEN_WIDTH, SCREEN_HEIGHT)),  # 0: 아침
     load_image(os.path.join(ASSETS_PATH, "evening_day.png"), (SCREEN_WIDTH, SCREEN_HEIGHT)),  # 1: 저녁
-    load_image(os.path.join(ASSETS_PATH, "night_day.png"),   (SCREEN_WIDTH, SCREEN_HEIGHT)),  # 2: 밤    
+    load_image(os.path.join(ASSETS_PATH, "night_day.png"),   (SCREEN_WIDTH, SCREEN_HEIGHT)),  # 2: 밤
 ]
-title_bg_img = load_image(
-    os.path.join(ASSETS_PATH, "background.png"), (SCREEN_WIDTH, SCREEN_HEIGHT))
-
+title_bg_img   = load_image(os.path.join(ASSETS_PATH, "background.png"), (SCREEN_WIDTH, SCREEN_HEIGHT))
 fisherman_img  = load_image(os.path.join(ASSETS_PATH, "fisherman.png"), (128, 128))
 shop_img       = load_image_jpg(os.path.join(ASSETS_PATH, "shop.jpg"), (SCREEN_WIDTH, SCREEN_HEIGHT))
 
@@ -312,6 +310,34 @@ def draw_splash_particle(surface, particles):
             if size > 2:
                 pygame.draw.circle(surface, WHITE, (int(p['x']) - 1, int(p['y']) - 1), size // 2)
 
+
+def draw_pixel_button(surface, rect, text, font, hovered=False, is_main=False):
+    x, y, w, h = rect.x, rect.y, rect.width, rect.height
+    B = 4
+    if is_main:
+        base  = (80, 200, 80)  if hovered else (60, 170, 60)
+        light = (160,255,140)  if hovered else (130,230,110)
+        dark  = (30, 100, 30)  if hovered else (25,  90, 25)
+        shadow= (15,  60, 15)
+        txt_c = (255,255,255)
+    else:
+        base  = (70, 140,220)  if hovered else (50, 110,190)
+        light = (150,210,255)  if hovered else (120,180,240)
+        dark  = (25,  70,130)  if hovered else (20,  60,120)
+        shadow= (8,   35, 75)
+        txt_c = (255,255,255)  if hovered else (220,240,255)
+    pygame.draw.rect(surface, shadow, (x+B,   y+B,   w,      h     ))
+    pygame.draw.rect(surface, dark,   (x,      y,     w,      h     ))
+    pygame.draw.rect(surface, base,   (x+B,   y+B,   w-B*2,  h-B*2 ))
+    pygame.draw.rect(surface, light,  (x+B,   y+B,   w-B*2,  B*2   ))
+    pygame.draw.rect(surface, light,  (x+B,   y+B,   B*2,    h-B*2 ))
+    pygame.draw.rect(surface, dark,   (x+B,   y+h-B*3, w-B*2, B*2  ))
+    offset   = 2 if hovered else 0
+    sh_surf  = font.render(text, True, shadow)
+    txt_surf = font.render(text, True, txt_c)
+    txt_rect = txt_surf.get_rect(center=(x+w//2, y+h//2+offset))
+    surface.blit(sh_surf,  (txt_rect.x+2, txt_rect.y+2))
+    surface.blit(txt_surf, txt_rect)
 # =========================================================
 # 타이틀 화면 변수
 # =========================================================
@@ -323,29 +349,45 @@ title_speed  = 5
 show_menu    = False
 
 # 메뉴 버튼 설정
-button_width  = 250
-button_height = 55
-button_gap    = 15
-
 menu_buttons = [
-    {"text": "낚시",  "scene": STATE_IDLE},
-    {"text": "상점",  "scene": STATE_SHOP_MAIN},
-    {"text": "가방",  "scene": STATE_INVENTORY},
-    {"text": "도감",  "scene": STATE_COLLECTION},
-    {"text": "업적",  "scene": STATE_ACHIEVEMENT},
+    {"text": "GAME START", "scene": STATE_IDLE},
+    {"text": "상점",        "scene": STATE_SHOP_MAIN},
+    {"text": "가방",        "scene": STATE_INVENTORY},
+    {"text": "도감",        "scene": STATE_COLLECTION},
+    {"text": "업적",        "scene": STATE_ACHIEVEMENT},
 ]
 
-button_rects = []
-start_y = 220
+# 버튼 크기
+BTN_SIDE_W  = 220   # 좌우 버튼 너비
+BTN_SIDE_H  = 100   # 좌우 버튼 높이
+BTN_MID_W   = 280   # 가운데 버튼 너비
+BTN_MID_H   = 70    # 가운데 버튼 높이
+BTN_V_GAP   = 30    # 좌우 버튼 세로 간격
+BTN_H_PAD   = 80    # 좌우 버튼 좌/우 여백
 
-for i in range(len(menu_buttons)):
-    rect = pygame.Rect(
-        SCREEN_WIDTH // 2 - button_width // 2,
-        start_y + i * (button_height + button_gap),
-        button_width,
-        button_height,
-    )
-    button_rects.append(rect)
+center_y    = SCREEN_HEIGHT // 2 + 60   # 버튼 그룹 세로 중심
+
+# 좌측 버튼 x
+left_x  = BTN_H_PAD
+# 우측 버튼 x
+right_x = SCREEN_WIDTH - BTN_H_PAD - BTN_SIDE_W
+# 좌우 버튼 상단 y (두 버튼이 세로 중심에 오도록)
+side_top_y = center_y - BTN_SIDE_H - BTN_V_GAP // 2
+
+button_rects = [
+    # 0: GAME START (가운데)
+    pygame.Rect(SCREEN_WIDTH // 2 - BTN_MID_W // 2,
+                center_y - BTN_MID_H // 2,
+                BTN_MID_W, BTN_MID_H),
+    # 1: 상점 (왼쪽 위)
+    pygame.Rect(left_x, side_top_y, BTN_SIDE_W, BTN_SIDE_H),
+    # 2: 가방 (왼쪽 아래)
+    pygame.Rect(left_x, side_top_y + BTN_SIDE_H + BTN_V_GAP, BTN_SIDE_W, BTN_SIDE_H),
+    # 3: 도감 (오른쪽 위)
+    pygame.Rect(right_x, side_top_y, BTN_SIDE_W, BTN_SIDE_H),
+    # 4: 업적 (오른쪽 아래)
+    pygame.Rect(right_x, side_top_y + BTN_SIDE_H + BTN_V_GAP, BTN_SIDE_W, BTN_SIDE_H),
+]
 
 # =========================================================
 # 메인 게임 클래스
@@ -703,11 +745,11 @@ class FishingGame:
         if show_menu:
             mouse_pos = pygame.mouse.get_pos()
             for i, rect in enumerate(button_rects):
-                color = BUTTON_HOVER_COLOR if rect.collidepoint(mouse_pos) else BUTTON_COLOR
-                pygame.draw.rect(screen, color, rect, border_radius=15)
-                text_surface = MENU_FONT.render(menu_buttons[i]["text"], True, BLACK)
-                text_rect    = text_surface.get_rect(center=rect.center)
-                screen.blit(text_surface, text_rect)
+                hovered  = rect.collidepoint(mouse_pos)
+                is_main  = (i == 0)
+                btn_font = MENU_FONT if is_main else font_medium
+                draw_pixel_button(screen, rect, menu_buttons[i]["text"],
+                                  btn_font, hovered=hovered, is_main=is_main)
 
         hint = font_tiny.render("ESC: 타이틀로 돌아가기", True, (200, 230, 255))
         screen.blit(hint, (10, SCREEN_HEIGHT - 25))
