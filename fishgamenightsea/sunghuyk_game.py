@@ -133,7 +133,10 @@ background_imgs = [
 title_bg_img   = load_image(os.path.join(ASSETS_PATH, "background.png"), (SCREEN_WIDTH, SCREEN_HEIGHT))
 fisherman_img  = load_image(os.path.join(ASSETS_PATH, "fisherman.png"), (128, 128))
 shop_img       = load_image_jpg(os.path.join(ASSETS_PATH, "shop.jpg"), (SCREEN_WIDTH, SCREEN_HEIGHT))
-
+title_img = load_image(
+    os.path.join(ASSETS_PATH, "title.png"),
+    (700, 260)   # ← 크기 조절 가능
+)
 fish_images = {
     "해초"    : load_image(os.path.join(ASSETS_PATH, "seaweed.png")),
     "바다장어" : load_image(os.path.join(ASSETS_PATH, "conger_eel.png")),
@@ -738,9 +741,11 @@ class FishingGame:
         else:
             show_menu = True
 
-        title_surface = TITLE_FONT.render(title_text, True, TITLE_COLOR)
-        title_rect    = title_surface.get_rect(center=(SCREEN_WIDTH // 2, title_y))
-        screen.blit(title_surface, title_rect)
+        title_rect = title_img.get_rect(
+            center=(SCREEN_WIDTH // 2, title_y)
+        )
+
+        screen.blit(title_img, title_rect)
 
         if show_menu:
             mouse_pos = pygame.mouse.get_pos()
