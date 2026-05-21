@@ -361,7 +361,7 @@ menu_buttons = [
 ]
 
 # 버튼 크기
-BTN_SIDE_W  = 210   # 좌우 버튼 너비
+BTN_SIDE_W  = 220   # 좌우 버튼 너비
 BTN_SIDE_H  = 100   # 좌우 버튼 높이
 BTN_MID_W   = 280   # 가운데 버튼 너비
 BTN_MID_H   = 70    # 가운데 버튼 높이
