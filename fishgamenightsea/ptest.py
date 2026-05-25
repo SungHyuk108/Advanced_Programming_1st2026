@@ -423,8 +423,84 @@ class FishingGame:
 
         # 도감 스크롤
         self.codex_scroll = 0
+        # =========================================================
+# 업적 데이터
+# FishingGame.__init__ 안에 추가
+# =========================================================
+
+        self.achievements = {
+            "first_fish": {
+                "name": "첫 수확",
+                "desc": "처음으로 물고기를 잡았다",
+                "unlocked": False,
+                "reward": 50,
+            },
+            "perfect_10": {
+                "name": "완벽한 캐스팅",
+                "desc": "PERFECT 캐스팅 10회 달성",
+                "unlocked": False,
+                "reward": 500,
+            },
+            "first_legendary": {
+                "name": "전설 포획자",
+                "desc": "legendary 물고기를 잡았다",
+                "unlocked": False,
+                "reward": 1000,
+            },
+
+            "codex_master": {
+                "name": "도감 마스터",
+                "desc": "도감을 100% 완성했다",
+                "unlocked": False,
+                "reward": 5000,
+            },
+
+            "rich_1000": {
+                "name": "재벌 어부",
+                "desc": "1000G를 모았다",
+                "unlocked": False,
+                "reward": 3000,
+            },
+}
+
+# =========================================================
+# 업적 진행도 변수
+# __init__ 안에 추가
+# =========================================================
+
+        self.total_catches = 0
+        self.perfect_count = 0
+
+# =========================================================
+# 업적 알림 변수
+# __init__ 안에 추가
+# =========================================================
+
+        self.achievement_popup = None
+        self.achievement_timer = 0
 
         self.reset_game()
+    # =========================================================
+# 업적 해금 함수
+# FishingGame 클래스 안에 추가
+# =========================================================
+
+    def unlock_achievement(self, key):
+
+        achievement = self.achievements[key]
+
+        if achievement["unlocked"]:
+            return
+
+        achievement["unlocked"] = True
+
+        reward = achievement["reward"]
+        self.total_money += reward
+
+        self.achievement_popup = f"[업적 달성] {achievement['name']} (+{reward}G)"
+        self.achievement_timer = 4
+
+        print(self.achievement_popup)
 
     # --------------------------------------------------
     # 장비 배수 헬퍼
@@ -606,6 +682,48 @@ class FishingGame:
 
             if self.catch_progress >= 100:
                 self.caught_fish = self.current_fish
+                # =========================================================
+                # 물고기 잡았을 때 업적 체크
+                # update() 안
+                # catch_progress >= 100 부분에 추가
+                # =========================================================
+
+                self.total_catches += 1
+
+# -------------------------------------------------
+# 1. 첫 물고기
+# -------------------------------------------------
+
+                if self.total_catches >= 1:
+                    self.unlock_achievement("first_fish")
+
+# -------------------------------------------------
+# 2. PERFECT 10회
+# -------------------------------------------------
+
+                if self.perfect_count >= 10:
+                    self.unlock_achievement("perfect_10")
+
+                # -------------------------------------------------
+                # 3. legendary 첫 획득
+                # -------------------------------------------------
+
+                if self.caught_fish["rarity"] == "legendary":
+                    self.unlock_achievement("first_legendary")
+
+                # -------------------------------------------------
+                # 4. 도감 100%
+                # -------------------------------------------------
+
+                if len(self.discovered) == len(FISH_DATA):
+                    self.unlock_achievement("codex_master")
+
+                # -------------------------------------------------
+                # 5. 돈 1000G
+                # -------------------------------------------------
+
+                if self.total_money >= 1000:
+                    self.unlock_achievement("rich_1000")
                 self.discovered.add(self.caught_fish["name"])   # 도감 등록
                 if len(self.inventory) < self.get_bag_size():
                     self.inventory.append(self.caught_fish)
@@ -622,6 +740,16 @@ class FishingGame:
             if self.result_timer >= 3:
                 self.state = STATE_IDLE
                 self.reset_game()
+        # =========================================================
+        # 업적 팝업 업데이트
+        # update() 맨 아래 추가
+        # =========================================================
+
+        if self.achievement_timer > 0:
+            self.achievement_timer -= dt
+
+            if self.achievement_timer <= 0:
+                self.achievement_popup = None
 
     # --------------------------------------------------
     # 액션 핸들러
@@ -632,12 +760,22 @@ class FishingGame:
             self.state           = STATE_CASTING
             self.power           = 0
             self.power_direction = 1
+        # =========================================================
+        # PERFECT 횟수 증가
+        # handle_action() 안
+        # STATE_CASTING 부분 수정
+        # =========================================================
+
         elif self.state == STATE_CASTING:
-            self.is_perfect_cast = (self.perfect_zone_start <= self.power <= self.perfect_zone_end)
-            self.state           = STATE_WAITING
-            self.wait_time       = 0
-            self.max_wait_time   = random.uniform(3, 6)
-            self.splash_particles= []
+
+            self.is_perfect_cast = (
+                self.perfect_zone_start <= self.power <= self.perfect_zone_end
+        )
+
+            if self.is_perfect_cast:
+                self.perfect_count += 1
+
+            self.state = STATE_WAITING
             # 낚시 시도 카운트 → 3번마다 배경 전환
             self.cast_count += 1
             if self.cast_count % 3 == 0:
@@ -797,6 +935,33 @@ class FishingGame:
         if self.state == STATE_IDLE:
             hint = font_tiny.render("[I] 가방  [P] 상점  [ESC] 타이틀", True, LIGHT_GRAY)
             screen.blit(hint, (SCREEN_WIDTH - 190, 70))
+        # =========================================================
+        # 업적 팝업 그리기
+        # draw_ui() 맨 아래 추가
+        # =========================================================
+
+        if self.achievement_popup:
+
+            popup_rect = pygame.Rect(
+                SCREEN_WIDTH // 2 - 220,
+                20,
+                440,
+                50
+            )
+
+            pygame.draw.rect(screen, (40, 30, 20), popup_rect)
+            pygame.draw.rect(screen, YELLOW, popup_rect, 3)
+
+            txt = font_small.render(
+                self.achievement_popup,
+                True,
+                WHITE
+            )
+
+            screen.blit(
+                txt,
+                txt.get_rect(center=popup_rect.center)
+            )
 
     # --------------------------------------------------
     # 낚시 - IDLE
@@ -1127,13 +1292,77 @@ class FishingGame:
     # 업적 화면 (임시)
     # --------------------------------------------------
 
-    def draw_achievement(self, screen):
-        screen.fill((30, 20, 40))
-        t = font_large.render("업적 (준비중)", True, WHITE)
-        screen.blit(t, t.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)))
-        ct = font_tiny.render("[ESC] 닫기", True, GRAY)
-        screen.blit(ct, ct.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30)))
+    # =========================================================
+    # 업적 화면 개선
+    # draw_achievement() 전체 교체
+    # =========================================================
 
+    def draw_achievement(self, screen):
+
+        screen.fill((25, 20, 35))
+
+        title = font_large.render("업적", True, WHITE)
+        screen.blit(title, title.get_rect(center=(SCREEN_WIDTH // 2, 40)))
+
+        y = 100
+
+        for key, achievement in self.achievements.items():
+
+            unlocked = achievement["unlocked"]
+
+            rect = pygame.Rect(120, y, 780, 70)
+
+            bg = (40, 60, 40) if unlocked else (35, 35, 40)
+            border = GREEN if unlocked else DARK_GRAY
+
+            pygame.draw.rect(screen, bg, rect)
+            pygame.draw.rect(screen, border, rect, 3)
+
+            # 이름
+            name_color = YELLOW if unlocked else GRAY
+
+            name_txt = font_medium.render(
+                achievement["name"],
+                True,
+                name_color
+            )
+
+            screen.blit(name_txt, (140, y + 10))
+
+            # 설명
+            desc_txt = font_small.render(
+                achievement["desc"],
+                True,
+                LIGHT_GRAY
+            )
+
+            screen.blit(desc_txt, (140, y + 38))
+
+            # 상태
+            status = "달성 완료" if unlocked else "미달성"
+
+            status_color = GREEN if unlocked else RED
+
+            status_txt = font_small.render(
+                status,
+                True,
+                status_color
+            )
+
+            screen.blit(status_txt, (760, y + 22))
+
+            y += 85
+
+        close_txt = font_tiny.render(
+            "[ESC] 닫기",
+            True,
+            GRAY
+        )
+
+        screen.blit(
+            close_txt,
+            close_txt.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 20))
+        )
     # --------------------------------------------------
     # 상점
     # --------------------------------------------------
