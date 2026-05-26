@@ -60,7 +60,7 @@ class FishingMixin:
         self.bite_time_limit= 2.0
 
         self.bar_y        = 200
-        self.bar_height   = 70
+        self.bar_height   = 90
         self.bar_velocity = 0
         self.bar_max_speed    = 6 * self.get_reel_multiplier()
         self.bar_accel_time   = 0.5
