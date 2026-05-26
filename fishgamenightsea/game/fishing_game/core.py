@@ -88,7 +88,7 @@ class CoreMixin:
         elif self.state in [STATE_SHOP_MAIN, STATE_SHOP_CATEGORY]:
             self.draw_shop(screen)
         elif self.state == STATE_COLLECTION:
-            self.draw_collection(screen)
+            self.draw_collection(screen, self.codex_scroll)
         elif self.state == STATE_ACHIEVEMENT:
             self.draw_achievement(screen)
         else:

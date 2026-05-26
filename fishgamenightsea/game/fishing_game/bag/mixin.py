@@ -75,42 +75,48 @@ class BagMixin:
     # 도감 화면
     # --------------------------------------------------
 
-    def draw_collection(self, screen):
+    def draw_collection(self, screen, scroll_offset=0):
         screen.fill((15, 25, 40))
 
-        # 제목
         title = font_large.render("도 감", True, WHITE)
         screen.blit(title, title.get_rect(center=(SCREEN_WIDTH // 2, 38)))
 
-        # 발견 수 표시
         count_txt = font_small.render(
             f"발견한 물고기: {len(self.discovered)} / {len(FISH_DATA)}",
             True, LIGHT_GRAY
         )
         screen.blit(count_txt, count_txt.get_rect(center=(SCREEN_WIDTH // 2, 72)))
 
-        # 구분선
         pygame.draw.line(screen, DARK_GRAY, (40, 90), (SCREEN_WIDTH - 40, 90), 2)
 
-        # 카드 그리드 설정
-        CARD_W   = 140
-        CARD_H   = 170
-        COLS     = 6
-        GAP_X    = 20
-        GAP_Y    = 20
-        START_X  = (SCREEN_WIDTH - (COLS * CARD_W + (COLS - 1) * GAP_X)) // 2
-        START_Y  = 108
+        CARD_W  = 140
+        CARD_H  = 170
+        COLS    = 6
+        GAP_X   = 20
+        GAP_Y   = 20
+        START_X = (SCREEN_WIDTH - (COLS * CARD_W + (COLS - 1) * GAP_X)) // 2
+        START_Y = 108
+
+        total_rows   = (len(FISH_DATA) + COLS - 1) // COLS
+        total_height = total_rows * (CARD_H + GAP_Y)
+        max_scroll   = max(0, total_height - (SCREEN_HEIGHT - START_Y - 40))
+        scroll_offset = max(0, min(scroll_offset, max_scroll))
+
+        clip_rect = pygame.Rect(0, 95, SCREEN_WIDTH, SCREEN_HEIGHT - 95 - 30)
+        screen.set_clip(clip_rect)
 
         for idx, fish in enumerate(FISH_DATA):
             col = idx % COLS
             row = idx // COLS
             cx  = START_X + col * (CARD_W + GAP_X)
-            cy  = START_Y + row * (CARD_H + GAP_Y)
+            cy  = START_Y + row * (CARD_H + GAP_Y) - scroll_offset
 
-            discovered = fish["name"] in self.discovered
-            rarity     = fish["rarity"]
+            if cy + CARD_H < 95 or cy > SCREEN_HEIGHT - 30:
+                continue
 
-            # 카드 배경
+            discovered   = fish["name"] in self.discovered
+            rarity       = fish["rarity"]
+
             if discovered:
                 bg_color     = (30, 40, 60)
                 border_color = RARITY_COLORS[rarity]
@@ -122,7 +128,6 @@ class BagMixin:
             pygame.draw.rect(screen, bg_color,     card_rect, border_radius=8)
             pygame.draw.rect(screen, border_color, card_rect, 2, border_radius=8)
 
-            # 물고기 이미지 or 실루엣
             img_size = 72
             img_x    = cx + (CARD_W - img_size) // 2
             img_y    = cy + 14
@@ -131,39 +136,33 @@ class BagMixin:
                 img = pygame.transform.scale(fish_images[fish["name"]], (img_size, img_size))
                 screen.blit(img, (img_x, img_y))
             else:
-                # 실루엣: 검은 사각형으로 표시
                 silhouette = pygame.transform.scale(fish_images[fish["name"]], (img_size, img_size))
-                dark_surf  = pygame.Surface((img_size, img_size), pygame.SRCALPHA)
-                dark_surf.fill((0, 0, 0, 0))
-                # 픽셀 하나하나 어둡게 (간단 실루엣)
                 silhouette.set_alpha(40)
                 screen.blit(silhouette, (img_x, img_y))
                 silhouette.set_alpha(255)
-                # ??? 텍스트
                 q_text = font_medium.render("???", True, (60, 60, 80))
                 screen.blit(q_text, q_text.get_rect(center=(cx + CARD_W // 2, img_y + img_size // 2)))
 
-            # 물고기 이름
-            if discovered:
-                name_color = WHITE
-                name_str   = fish["name"]
-            else:
-                name_color = (50, 50, 65)
-                name_str   = "???"
-
-            name_txt = font_small.render(name_str, True, name_color)
+            name_str   = fish["name"] if discovered else "???"
+            name_color = WHITE if discovered else (50, 50, 65)
+            name_txt   = font_small.render(name_str, True, name_color)
             screen.blit(name_txt, name_txt.get_rect(center=(cx + CARD_W // 2, img_y + img_size + 10)))
 
-            # 희귀도 뱃지
             if discovered:
                 rarity_txt = font_tiny.render(RARITY_KR[rarity], True, RARITY_COLORS[rarity])
                 screen.blit(rarity_txt, rarity_txt.get_rect(center=(cx + CARD_W // 2, img_y + img_size + 30)))
-
-                # 판매가
                 price_txt = font_tiny.render(f"{fish['price']}G", True, YELLOW)
                 screen.blit(price_txt, price_txt.get_rect(center=(cx + CARD_W // 2, img_y + img_size + 48)))
 
-        # 닫기 안내
-        close_txt = font_tiny.render("[ESC] 닫기", True, GRAY)
+        screen.set_clip(None)
+
+        if max_scroll > 0:
+            bar_h = int((SCREEN_HEIGHT - 125) * (SCREEN_HEIGHT / (total_height + START_Y)))
+            bar_y = 95 + int((SCREEN_HEIGHT - 125 - bar_h) * (scroll_offset / max_scroll))
+            pygame.draw.rect(screen, DARK_GRAY,  (SCREEN_WIDTH - 12, 95, 8, SCREEN_HEIGHT - 125), border_radius=4)
+            pygame.draw.rect(screen, LIGHT_GRAY, (SCREEN_WIDTH - 12, bar_y, 8, bar_h), border_radius=4)
+
+        close_txt = font_tiny.render("[ESC] 닫기  |  [↑↓] 스크롤", True, GRAY)
         screen.blit(close_txt, close_txt.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 18)))
 
+        self.codex_scroll = scroll_offset  # 클램핑된 값 저장
