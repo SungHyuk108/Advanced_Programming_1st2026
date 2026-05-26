@@ -18,9 +18,11 @@ from game.config import (
     STATE_SHOP_CATEGORY,
     STATE_COLLECTION,
     STATE_ACHIEVEMENT,
+    STATE_HELP,
     WHITE,
     YELLOW,
     LIGHT_GRAY,
+    GRAY,
     BROWN,
     LIGHT_BROWN,
     DARK_BROWN,
@@ -91,6 +93,8 @@ class CoreMixin:
             self.draw_collection(screen, self.codex_scroll)
         elif self.state == STATE_ACHIEVEMENT:
             self.draw_achievement(screen)
+        elif self.state == STATE_HELP:
+            self.draw_help(screen)
         else:
             self.draw_background(screen)
             if self.state == STATE_IDLE:
@@ -132,6 +136,16 @@ class CoreMixin:
                 btn_font = MENU_FONT if is_main else font_medium
                 draw_pixel_button(screen, rect, menu_buttons[i]["text"],
                                   btn_font, hovered=hovered, is_main=is_main)
+                    # 도움말 버튼
+            help_hovered = title_ui.help_button_rect.collidepoint(mouse_pos)
+            draw_pixel_button(
+                screen,
+                title_ui.help_button_rect,
+                "도움말",
+                font_tiny,
+                hovered=help_hovered,
+                is_main=False,
+            )
 
         hint = font_tiny.render("ESC: 타이틀로 돌아가기", True, (200, 230, 255))
         screen.blit(hint, (10, SCREEN_HEIGHT - 25))
@@ -173,3 +187,16 @@ class CoreMixin:
         self.update_fishing(dt, action_pressed)
         self.update_achievement_popup(dt)
 
+    def draw_help(self, screen):
+        screen.fill((10, 20, 35))
+
+        title = font_medium.render("도움말", True, WHITE)
+        screen.blit(title, title.get_rect(center=(SCREEN_WIDTH // 2, 40)))
+
+        pygame.draw.line(screen, (50, 50, 70), (40, 70), (SCREEN_WIDTH - 40, 70), 2)
+
+        msg = font_small.render("준비중입니다.", True, LIGHT_GRAY)
+        screen.blit(msg, msg.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)))
+
+        close = font_tiny.render("[ESC] 닫기", True, GRAY)
+        screen.blit(close, close.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 25)))

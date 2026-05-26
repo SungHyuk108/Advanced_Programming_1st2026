@@ -13,6 +13,7 @@ from game.config import (
     STATE_SHOP_CATEGORY,
     STATE_SHOP_MAIN,
     STATE_TITLE,
+    STATE_HELP,
 )
 from game.display import clock, screen
 from game.fishing_game import FishingGame
@@ -44,6 +45,7 @@ def run():
                         STATE_SHOP_MAIN,
                         STATE_COLLECTION,
                         STATE_ACHIEVEMENT,
+                        STATE_HELP,
                     ]:
                         game.state = STATE_TITLE
                     elif game.state != STATE_TITLE:
@@ -56,6 +58,7 @@ def run():
                         STATE_SHOP_CATEGORY,
                         STATE_COLLECTION,
                         STATE_ACHIEVEMENT,
+                        STATE_HELP,
                     ]:
                         game.handle_action()
 
@@ -97,12 +100,16 @@ def run():
                         if rect.collidepoint(event.pos):
                             game.state = menu_buttons[i]["scene"]
                             break
+                    if title_ui.help_button_rect.collidepoint(event.pos):
+                        game.state = STATE_HELP
+
                 elif game.state in [STATE_SHOP_MAIN, STATE_SHOP_CATEGORY]:
                     game.handle_shop_click(event.pos)
                 elif game.state not in [
                     STATE_COLLECTION,
                     STATE_ACHIEVEMENT,
                     STATE_INVENTORY,
+                    STATE_HELP,
                 ]:
                     game.handle_action()
 

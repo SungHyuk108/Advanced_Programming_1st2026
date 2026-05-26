@@ -48,3 +48,14 @@ button_rects = [
     # 4: 업적 (오른쪽 아래)
     pygame.Rect(right_x, side_top_y + BTN_SIDE_H + BTN_V_GAP, BTN_SIDE_W, BTN_SIDE_H),
 ]
+
+# 도움말 버튼 (우측 하단)
+HELP_BTN_W = int(BTN_SIDE_W * 0.6)
+HELP_BTN_H = int(BTN_SIDE_H * 0.6)
+
+help_button_rect = pygame.Rect(
+    SCREEN_WIDTH - HELP_BTN_W - 20,
+    SCREEN_HEIGHT - HELP_BTN_H - 20,
+    HELP_BTN_W,
+    HELP_BTN_H,
+)
