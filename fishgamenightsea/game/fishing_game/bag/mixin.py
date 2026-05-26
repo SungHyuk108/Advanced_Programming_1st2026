@@ -6,6 +6,7 @@ from game.config import (
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
     WHITE,
+    BLACK,
     GRAY,
     GREEN,
     BRIGHT_GREEN,
