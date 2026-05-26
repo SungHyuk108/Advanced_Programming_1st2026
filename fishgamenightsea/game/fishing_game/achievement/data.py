@@ -31,4 +31,24 @@ DEFAULT_ACHIEVEMENTS = {
         "unlocked": False,
         "reward": 3000,
     },
+    "fish_10": {
+        "name": "초보 어부",
+        "desc": "물고기 10마리 잡기",
+        "unlocked": False,
+        "reward": 300,
+    },
+
+    "fish_20": {
+        "name": "숙련 어부",
+        "desc": "물고기 20마리 잡기",
+        "unlocked": False,
+        "reward": 700,
+    },
+
+    "fish_30": {
+        "name": "베테랑 어부",
+        "desc": "물고기 30마리 잡기",
+        "unlocked": False,
+        "reward": 1200,
+    },
 }

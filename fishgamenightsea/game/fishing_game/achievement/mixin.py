@@ -31,6 +31,7 @@ class AchievementMixin:
 
         # 도감용
         self.discovered = set()
+        self.achievement_scroll = 0
 
 
     def on_fish_caught(self):
@@ -59,6 +60,14 @@ class AchievementMixin:
 
         if self.total_money >= 1000:
             self.unlock_achievement("rich_1000")
+        if self.total_catches >= 10:
+            self.unlock_achievement("fish_10")
+
+        if self.total_catches >= 20:
+            self.unlock_achievement("fish_20")
+
+        if self.total_catches >= 30:
+            self.unlock_achievement("fish_30")
 
         # 인벤토리 추가
         if len(self.inventory) < self.get_bag_size():
@@ -108,13 +117,17 @@ class AchievementMixin:
         title = font_large.render("업적", True, WHITE)
         screen.blit(title, title.get_rect(center=(SCREEN_WIDTH // 2, 40)))
 
-        y = 100
+        y = 100 - self.achievement_scroll
 
         for key, achievement in self.achievements.items():
 
             unlocked = achievement["unlocked"]
 
             rect = pygame.Rect(120, y, 780, 70)
+
+            if y < -80 or y > SCREEN_HEIGHT:
+                y += 85
+                continue
 
             bg = (40, 60, 40) if unlocked else (35, 35, 40)
             border = GREEN if unlocked else DARK_GRAY

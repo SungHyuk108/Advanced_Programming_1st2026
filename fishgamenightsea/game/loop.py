@@ -78,12 +78,20 @@ def run():
                     if game.state == STATE_INVENTORY:
                         game.sell_all_fish()
                 elif event.key == pygame.K_UP:
+
                     if game.state == STATE_COLLECTION:
                         game.codex_scroll = max(0, game.codex_scroll - 40)
 
+                    elif game.state == STATE_ACHIEVEMENT:
+                        game.achievement_scroll = max(0, game.achievement_scroll - 40)
+
                 elif event.key == pygame.K_DOWN:
+
                     if game.state == STATE_COLLECTION:
                         game.codex_scroll += 40
+
+                    elif game.state == STATE_ACHIEVEMENT:
+                        game.achievement_scroll += 40
                 elif event.key in [
                     pygame.K_1,
                     pygame.K_2,
