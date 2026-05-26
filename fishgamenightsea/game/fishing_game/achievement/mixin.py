@@ -22,10 +22,51 @@ class AchievementMixin:
 
     def init_achievement_state(self):
         self.achievements = copy.deepcopy(DEFAULT_ACHIEVEMENTS)
+
         self.total_catches = 0
         self.perfect_count = 0
+
         self.achievement_popup = None
         self.achievement_timer = 0
+
+        # 도감용
+        self.discovered = set()
+
+
+    def on_fish_caught(self):
+
+        # 잡은 물고기 기록
+        self.discovered.add(self.caught_fish["name"])
+
+        self.total_catches += 1
+
+        # 전체 물고기 수 계산
+        total_fish_count = len(FISH_DATA)
+
+        # 업적 체크
+        if self.total_catches >= 1:
+            self.unlock_achievement("first_fish")
+
+        if self.perfect_count >= 10:
+            self.unlock_achievement("perfect_10")
+
+        if self.caught_fish["rarity"] == "legendary":
+            self.unlock_achievement("first_legendary")
+
+        # 도감 마스터
+        if len(self.discovered) >= total_fish_count:
+            self.unlock_achievement("codex_master")
+
+        if self.total_money >= 1000:
+            self.unlock_achievement("rich_1000")
+
+        # 인벤토리 추가
+        if len(self.inventory) < self.get_bag_size():
+            self.inventory.append(self.caught_fish)
+
+        # 디버그 출력
+        print("현재 도감:", len(self.discovered))
+        print("전체 물고기:", total_fish_count)
 
     def unlock_achievement(self, key):
 
@@ -44,23 +85,6 @@ class AchievementMixin:
 
         print(self.achievement_popup)
 
-
-
-    def on_fish_caught(self):
-        self.discovered.add(self.caught_fish["name"])
-        self.total_catches += 1
-        if self.total_catches >= 1:
-            self.unlock_achievement("first_fish")
-        if self.perfect_count >= 10:
-            self.unlock_achievement("perfect_10")
-        if self.caught_fish["rarity"] == "legendary":
-            self.unlock_achievement("first_legendary")
-        if len(self.discovered) == len(FISH_DATA):
-            self.unlock_achievement("codex_master")
-        if self.total_money >= 1000:
-            self.unlock_achievement("rich_1000")
-        if len(self.inventory) < self.get_bag_size():
-            self.inventory.append(self.caught_fish)
 
     def update_achievement_popup(self, dt):
         if self.achievement_timer > 0:
