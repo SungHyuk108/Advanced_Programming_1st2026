@@ -25,7 +25,7 @@ from game.config import (
     BRIGHT_YELLOW,
     DARK_GRAY,
 )
-from game.data import RARITY_COLORS, RARITY_KR
+from game.data import FISH_DATA, RARITY_COLORS, RARITY_KR
 from game.drawing import (
     draw_pixel_bobber,
     draw_pixel_fishing_line,
