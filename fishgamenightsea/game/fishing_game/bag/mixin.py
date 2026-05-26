@@ -76,93 +76,145 @@ class BagMixin:
     # --------------------------------------------------
 
     def draw_collection(self, screen, scroll_offset=0):
-        screen.fill((15, 25, 40))
+            screen.fill((15, 25, 40))
 
-        title = font_large.render("도 감", True, WHITE)
-        screen.blit(title, title.get_rect(center=(SCREEN_WIDTH // 2, 38)))
+            # 제목
+            title = font_large.render("도 감", True, WHITE)
+            screen.blit(title, title.get_rect(center=(SCREEN_WIDTH // 2, 38)))
 
-        count_txt = font_small.render(
-            f"발견한 물고기: {len(self.discovered)} / {len(FISH_DATA)}",
-            True, LIGHT_GRAY
-        )
-        screen.blit(count_txt, count_txt.get_rect(center=(SCREEN_WIDTH // 2, 72)))
+            # 발견 수
+            count_txt = font_small.render(
+                f"발견한 물고기: {len(self.discovered)} / {len(FISH_DATA)}",
+                True, LIGHT_GRAY
+            )
+            screen.blit(count_txt, count_txt.get_rect(center=(SCREEN_WIDTH // 2, 72)))
 
-        pygame.draw.line(screen, DARK_GRAY, (40, 90), (SCREEN_WIDTH - 40, 90), 2)
+            pygame.draw.line(screen, DARK_GRAY, (40, 90), (SCREEN_WIDTH - 40, 90), 2)
 
-        CARD_W  = 140
-        CARD_H  = 170
-        COLS    = 6
-        GAP_X   = 20
-        GAP_Y   = 20
-        START_X = (SCREEN_WIDTH - (COLS * CARD_W + (COLS - 1) * GAP_X)) // 2
-        START_Y = 108
+            # 희귀도 순서 (높은 등급 → 낮은 등급)
+            RARITY_ORDER = ["legendary", "epic", "rare", "uncommon", "common", "trash"]
 
-        total_rows   = (len(FISH_DATA) + COLS - 1) // COLS
-        total_height = total_rows * (CARD_H + GAP_Y)
-        max_scroll   = max(0, total_height - (SCREEN_HEIGHT - START_Y - 40))
-        scroll_offset = max(0, min(scroll_offset, max_scroll))
+            CARD_W  = 130
+            CARD_H  = 160
+            GAP_X   = 14
+            GAP_Y   = 18
+            START_X = 40
+            START_Y = 108
 
-        clip_rect = pygame.Rect(0, 95, SCREEN_WIDTH, SCREEN_HEIGHT - 95 - 30)
-        screen.set_clip(clip_rect)
+            # 전체 콘텐츠 높이 계산 (스크롤 max 용)
+            total_content_h = 0
+            for rarity in RARITY_ORDER:
+                fish_in_tier = [f for f in FISH_DATA if f["rarity"] == rarity]
+                if not fish_in_tier:
+                    continue
+                cols = (SCREEN_WIDTH - START_X * 2 + GAP_X) // (CARD_W + GAP_X)
+                rows = (len(fish_in_tier) + cols - 1) // cols
+                total_content_h += 42 + rows * (CARD_H + GAP_Y) + GAP_Y
 
-        for idx, fish in enumerate(FISH_DATA):
-            col = idx % COLS
-            row = idx // COLS
-            cx  = START_X + col * (CARD_W + GAP_X)
-            cy  = START_Y + row * (CARD_H + GAP_Y) - scroll_offset
+            max_scroll    = max(0, total_content_h - (SCREEN_HEIGHT - START_Y - 40))
+            scroll_offset = max(0, min(scroll_offset, max_scroll))
 
-            if cy + CARD_H < 95 or cy > SCREEN_HEIGHT - 30:
-                continue
+            # 클리핑
+            clip_rect = pygame.Rect(0, 95, SCREEN_WIDTH, SCREEN_HEIGHT - 95 - 30)
+            screen.set_clip(clip_rect)
 
-            discovered   = fish["name"] in self.discovered
-            rarity       = fish["rarity"]
+            COLS = (SCREEN_WIDTH - START_X * 2 + GAP_X) // (CARD_W + GAP_X)
+            y_cursor = START_Y - scroll_offset
 
-            if discovered:
-                bg_color     = (30, 40, 60)
-                border_color = RARITY_COLORS[rarity]
-            else:
-                bg_color     = (20, 20, 28)
-                border_color = (50, 50, 60)
+            for rarity in RARITY_ORDER:
+                fish_in_tier = [f for f in FISH_DATA if f["rarity"] == rarity]
+                if not fish_in_tier:
+                    continue
 
-            card_rect = pygame.Rect(cx, cy, CARD_W, CARD_H)
-            pygame.draw.rect(screen, bg_color,     card_rect, border_radius=8)
-            pygame.draw.rect(screen, border_color, card_rect, 2, border_radius=8)
+                tier_color = RARITY_COLORS[rarity]
 
-            img_size = 72
-            img_x    = cx + (CARD_W - img_size) // 2
-            img_y    = cy + 14
+                # 티어 헤더
+                if 95 <= y_cursor <= SCREEN_HEIGHT:
+                    # 헤더 배경
+                    header_rect = pygame.Rect(START_X, y_cursor, SCREEN_WIDTH - START_X * 2, 34)
+                    header_surf = pygame.Surface((header_rect.width, header_rect.height), pygame.SRCALPHA)
+                    header_surf.fill((*tier_color[:3], 40) if len(tier_color) == 3 else (80, 80, 80, 40))
+                    screen.blit(header_surf, header_rect.topleft)
+                    pygame.draw.rect(screen, tier_color, header_rect, 2, border_radius=6)
 
-            if discovered:
-                img = pygame.transform.scale(fish_images[fish["name"]], (img_size, img_size))
-                screen.blit(img, (img_x, img_y))
-            else:
-                silhouette = pygame.transform.scale(fish_images[fish["name"]], (img_size, img_size))
-                silhouette.set_alpha(40)
-                screen.blit(silhouette, (img_x, img_y))
-                silhouette.set_alpha(255)
-                q_text = font_medium.render("???", True, (60, 60, 80))
-                screen.blit(q_text, q_text.get_rect(center=(cx + CARD_W // 2, img_y + img_size // 2)))
+                    # 티어 이름
+                    tier_txt = font_medium.render(RARITY_KR[rarity], True, tier_color)
+                    screen.blit(tier_txt, tier_txt.get_rect(midleft=(START_X + 14, y_cursor + 17)))
 
-            name_str   = fish["name"] if discovered else "???"
-            name_color = WHITE if discovered else (50, 50, 65)
-            name_txt   = font_small.render(name_str, True, name_color)
-            screen.blit(name_txt, name_txt.get_rect(center=(cx + CARD_W // 2, img_y + img_size + 10)))
+                    # 발견 수
+                    discovered_count = sum(1 for f in fish_in_tier if f["name"] in self.discovered)
+                    disc_txt = font_tiny.render(
+                        f"{discovered_count}/{len(fish_in_tier)}",
+                        True, LIGHT_GRAY
+                    )
+                    screen.blit(disc_txt, disc_txt.get_rect(midright=(SCREEN_WIDTH - START_X - 10, y_cursor + 17)))
 
-            if discovered:
-                rarity_txt = font_tiny.render(RARITY_KR[rarity], True, RARITY_COLORS[rarity])
-                screen.blit(rarity_txt, rarity_txt.get_rect(center=(cx + CARD_W // 2, img_y + img_size + 30)))
-                price_txt = font_tiny.render(f"{fish['price']}G", True, YELLOW)
-                screen.blit(price_txt, price_txt.get_rect(center=(cx + CARD_W // 2, img_y + img_size + 48)))
+                y_cursor += 42
 
-        screen.set_clip(None)
+                # 카드 그리기
+                for idx, fish in enumerate(fish_in_tier):
+                    col = idx % COLS
+                    row = idx // COLS
+                    cx  = START_X + col * (CARD_W + GAP_X)
+                    cy  = y_cursor + row * (CARD_H + GAP_Y)
 
-        if max_scroll > 0:
-            bar_h = int((SCREEN_HEIGHT - 125) * (SCREEN_HEIGHT / (total_height + START_Y)))
-            bar_y = 95 + int((SCREEN_HEIGHT - 125 - bar_h) * (scroll_offset / max_scroll))
-            pygame.draw.rect(screen, DARK_GRAY,  (SCREEN_WIDTH - 12, 95, 8, SCREEN_HEIGHT - 125), border_radius=4)
-            pygame.draw.rect(screen, LIGHT_GRAY, (SCREEN_WIDTH - 12, bar_y, 8, bar_h), border_radius=4)
+                    if cy + CARD_H < 95 or cy > SCREEN_HEIGHT:
+                        continue
 
-        close_txt = font_tiny.render("[ESC] 닫기  |  [↑↓] 스크롤", True, GRAY)
-        screen.blit(close_txt, close_txt.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 18)))
+                    discovered = fish["name"] in self.discovered
 
-        self.codex_scroll = scroll_offset  # 클램핑된 값 저장
+                    if discovered:
+                        bg_color     = (30, 40, 60)
+                        border_color = tier_color
+                    else:
+                        bg_color     = (20, 20, 28)
+                        border_color = (50, 50, 60)
+
+                    card_rect = pygame.Rect(cx, cy, CARD_W, CARD_H)
+                    pygame.draw.rect(screen, bg_color,     card_rect, border_radius=8)
+                    pygame.draw.rect(screen, border_color, card_rect, 2, border_radius=8)
+
+                    img_size = 64
+                    img_x    = cx + (CARD_W - img_size) // 2
+                    img_y    = cy + 12
+
+                    if discovered:
+                        img = pygame.transform.scale(fish_images[fish["name"]], (img_size, img_size))
+                        screen.blit(img, (img_x, img_y))
+                    else:
+                        silhouette = pygame.transform.scale(fish_images[fish["name"]], (img_size, img_size))
+                        silhouette.set_alpha(40)
+                        screen.blit(silhouette, (img_x, img_y))
+                        silhouette.set_alpha(255)
+                        q_text = font_medium.render("???", True, (60, 60, 80))
+                        screen.blit(q_text, q_text.get_rect(center=(cx + CARD_W // 2, img_y + img_size // 2)))
+
+                    name_str   = fish["name"] if discovered else "???"
+                    name_color = WHITE if discovered else (50, 50, 65)
+                    name_txt   = font_small.render(name_str, True, name_color)
+                    screen.blit(name_txt, name_txt.get_rect(center=(cx + CARD_W // 2, img_y + img_size + 8)))
+
+                    if discovered:
+                        rarity_txt = font_tiny.render(RARITY_KR[rarity], True, tier_color)
+                        screen.blit(rarity_txt, rarity_txt.get_rect(center=(cx + CARD_W // 2, img_y + img_size + 26)))
+                        price_txt = font_tiny.render(f"{fish['price']}G", True, YELLOW)
+                        screen.blit(price_txt, price_txt.get_rect(center=(cx + CARD_W // 2, img_y + img_size + 44)))
+
+                # 다음 티어로 y 이동
+                rows = (len(fish_in_tier) + COLS - 1) // COLS
+                y_cursor += rows * (CARD_H + GAP_Y) + GAP_Y
+
+            screen.set_clip(None)
+
+            # 스크롤바
+            if max_scroll > 0:
+                bar_area_h = SCREEN_HEIGHT - 125
+                bar_h = max(30, int(bar_area_h * (bar_area_h / total_content_h)))
+                bar_y = 95 + int((bar_area_h - bar_h) * (scroll_offset / max_scroll))
+                pygame.draw.rect(screen, DARK_GRAY,  (SCREEN_WIDTH - 12, 95, 8, bar_area_h), border_radius=4)
+                pygame.draw.rect(screen, LIGHT_GRAY, (SCREEN_WIDTH - 12, bar_y, 8, bar_h),   border_radius=4)
+
+            close_txt = font_tiny.render("[ESC] 닫기  |  [↑↓] 스크롤", True, GRAY)
+            screen.blit(close_txt, close_txt.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 18)))
+
+            self.codex_scroll = scroll_offset
