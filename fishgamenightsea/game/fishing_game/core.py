@@ -60,6 +60,8 @@ class CoreMixin:
 
         # 도감 스크롤
         self.codex_scroll = 0
+
+        
         # =========================================================
         # 업적 데이터
         # FishingGame.__init__ 안에 추가
