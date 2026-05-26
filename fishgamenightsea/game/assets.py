@@ -61,5 +61,12 @@ def load_all_assets():
         "날치": load_image(os.path.join(ASSETS_PATH, "flying_fish.png")),
         "쓰레기": load_image(os.path.join(ASSETS_PATH, "trash.png")),
         "멸치": load_image(os.path.join(ASSETS_PATH, "anchovy.png")),
+        "게": load_image(os.path.join(ASSETS_PATH, "crab.png")),
+        "가오리": load_image(os.path.join(ASSETS_PATH, "stingray.png")),
+        "새우": load_image(os.path.join(ASSETS_PATH, "shrimp.png")),
+        "복어": load_image(os.path.join(ASSETS_PATH, "pufferfish.png")),
+        "피라냐": load_image(os.path.join(ASSETS_PATH, "piranha.png")),
+        "문어": load_image(os.path.join(ASSETS_PATH, "octopus.png")),
+        "황금잉어": load_image(os.path.join(ASSETS_PATH, "golden_carp.png")),
     }
     _loaded = True

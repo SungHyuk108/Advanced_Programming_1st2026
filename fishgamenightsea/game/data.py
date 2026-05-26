@@ -2,18 +2,44 @@
 from game.config import GRAY, WHITE, GREEN, YELLOW
 
 FISH_DATA = [
-    {"name": "쓰레기",  "rarity": "trash",     "speed": 1.5, "price": 1},
-    {"name": "해초",    "rarity": "trash",     "speed": 1,   "price": 2},
-    {"name": "멸치",    "rarity": "common",    "speed": 2,   "price": 15},
-    {"name": "숭어",    "rarity": "common",    "speed": 2.5, "price": 30},
-    {"name": "날치",    "rarity": "uncommon",  "speed": 3,   "price": 60},
-    {"name": "연어",    "rarity": "uncommon",  "speed": 3.5, "price": 100},
-    {"name": "참치",    "rarity": "rare",      "speed": 4,   "price": 200},
-    {"name": "바다장어","rarity": "rare",      "speed": 4.5, "price": 280},
-    {"name": "황새치",  "rarity": "epic",      "speed": 5.5, "price": 450},
-    {"name": "돌고래",  "rarity": "legendary", "speed": 6,   "price": 800},
-    {"name": "상어",    "rarity": "legendary", "speed": 7,   "price": 1200},
+    {"name": "쓰레기",    "rarity": "trash",     "speed": 1.5, "price": 1},
+    {"name": "해초",      "rarity": "trash",     "speed": 1,   "price": 2},
+    {"name": "멸치",      "rarity": "common",    "speed": 2,   "price": 15},
+    {"name": "숭어",      "rarity": "common",    "speed": 2.5, "price": 30},
+    {"name": "게",        "rarity": "common",    "speed": 2.2, "price": 22},
+    {"name": "새우",      "rarity": "common",    "speed": 2.0, "price": 18},
+    {"name": "날치",      "rarity": "uncommon",  "speed": 3,   "price": 60},
+    {"name": "연어",      "rarity": "uncommon",  "speed": 3.5, "price": 100},
+    {"name": "피라냐",    "rarity": "uncommon",  "speed": 3.2, "price": 75},
+    {"name": "참치",      "rarity": "rare",      "speed": 4,   "price": 200},
+    {"name": "바다장어",  "rarity": "rare",      "speed": 4.5, "price": 280},
+    {"name": "복어",      "rarity": "rare",      "speed": 4.2, "price": 240},
+    {"name": "황새치",    "rarity": "epic",      "speed": 5.5, "price": 450},
+    {"name": "가오리",    "rarity": "epic",      "speed": 5.8, "price": 500},
+    {"name": "문어",      "rarity": "epic",      "speed": 5.2, "price": 420},
+    {"name": "돌고래",    "rarity": "legendary", "speed": 6,   "price": 800},
+    {"name": "상어",      "rarity": "legendary", "speed": 7,   "price": 1200},
+    {"name": "황금잉어",  "rarity": "legendary", "speed": 6.5, "price": 1500},
 ]
+
+# 낚시 시 희귀도별 기본 가중치 (FISH_DATA 순서와 무관하게 rarity로 적용)
+RARITY_CATCH_WEIGHT = {
+    "trash": 12.5,
+    "common": 20,
+    "uncommon": 9,
+    "rare": 3.5,
+    "epic": 1.0,
+    "legendary": 0.12,
+}
+
+RARITY_CATCH_WEIGHT_PERFECT = {
+    "trash": 5,
+    "common": 18,
+    "uncommon": 12,
+    "rare": 6,
+    "epic": 2,
+    "legendary": 0.5,
+}
 
 RARITY_COLORS = {
     "trash"    : GRAY,

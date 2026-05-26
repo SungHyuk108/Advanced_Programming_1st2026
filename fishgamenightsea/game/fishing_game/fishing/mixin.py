@@ -25,7 +25,13 @@ from game.config import (
     BRIGHT_YELLOW,
     DARK_GRAY,
 )
-from game.data import FISH_DATA, RARITY_COLORS, RARITY_KR
+from game.data import (
+    FISH_DATA,
+    RARITY_CATCH_WEIGHT,
+    RARITY_CATCH_WEIGHT_PERFECT,
+    RARITY_COLORS,
+    RARITY_KR,
+)
 from game.drawing import (
     draw_pixel_bobber,
     draw_pixel_fishing_line,
@@ -73,21 +79,22 @@ class FishingMixin:
     # --------------------------------------------------
 
     def select_fish(self):
-        weights = [15, 10, 25, 20, 12, 8, 5, 3, 1.5, 0.4, 0.1]
-        if self.is_perfect_cast:
-            weights = [5, 5, 20, 20, 18, 15, 10, 4, 2, 0.7, 0.3]
+        table = RARITY_CATCH_WEIGHT_PERFECT if self.is_perfect_cast else RARITY_CATCH_WEIGHT
+        weights = [table[fish["rarity"]] for fish in FISH_DATA]
+
         if self.bait:
             bait_effect = self.bait["effect"]
-            for i in range(4):
-                weights[i] /= bait_effect
-            for i in range(4, len(weights)):
-                weights[i] *= bait_effect
+            weights = [
+                w / bait_effect if fish["rarity"] in ("trash", "common") else w * bait_effect
+                for fish, w in zip(FISH_DATA, weights)
+            ]
             self.bait_count -= 1
             if self.bait_count <= 0:
-                self.bait       = None
+                self.bait = None
                 self.bait_count = 0
+
         total = sum(weights)
-        r     = random.uniform(0, total)
+        r = random.uniform(0, total)
         cumulative = 0
         for i, w in enumerate(weights):
             cumulative += w
