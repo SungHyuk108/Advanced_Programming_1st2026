@@ -91,7 +91,13 @@ def run():
                         game.codex_scroll += 40
 
                     elif game.state == STATE_ACHIEVEMENT:
-                        game.achievement_scroll += 40
+
+                        max_scroll = max(0, len(game.achievements) * 85 - 450)
+
+                        game.achievement_scroll = min(
+                            max_scroll,
+                            game.achievement_scroll + 40
+                        )
                 elif event.key in [
                     pygame.K_1,
                     pygame.K_2,
