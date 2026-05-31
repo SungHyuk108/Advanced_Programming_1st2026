@@ -1,6 +1,6 @@
 """게임 공통: 초기화, HUD, 타이틀, draw 라우팅."""
 import pygame
-
+print("CORE LOADED 999999")
 from game import title_ui
 from game.assets import background_imgs, title_bg_img, fisherman_img, title_img
 from game.config import (
@@ -32,6 +32,42 @@ from game.drawing import draw_pixel_button
 from game.fonts import font_small, font_tiny, font_medium, MENU_FONT
 from game.title_ui import button_rects, menu_buttons
 
+HELP_TABS = [
+    "낚시 방법",
+    "단축키",
+    "가방 및 상점",
+    "업적 및 도감",
+]
+
+HELP_CONTENT = {
+    0: [
+        "1. SPACE 또는 클릭으로 낚시 시작",
+        "",
+        "2. 미끼 물면 SPACE 또는 클릭 다시 누르기",
+        "",
+        "3. SPACE 또는 클릭으로 스크롤을 조절하여 물고기와 겹치게 하기",
+        "",
+        "4. 초록색 게이지가 다 올라가면 낚시 성공!",
+    ],
+
+    1: [
+        "[SPACE] 낚시",
+        "[I] 가방",
+        "[P] 상점",
+        "[S] 가방에서 물고기 일괄 판매",
+    ],
+
+    2: [
+        "가방에는 잡은 물고기가 저장되며, 물고기 판매가 가능합니다.",
+        "상점에서는 번 돈으로 각종 낚시 장비와 미끼를 구매할 수 있습니다!",
+    ],
+
+    3: [
+        "새로운 물고기를 발견할 때마다 도감에 추가됩니다.",
+        "특정 조건을 달성하면 업적이 해금되고, 그에 따른 보상을 받을 수 있습니다.",
+    ],
+}
+
 
 class CoreMixin:
 
@@ -60,7 +96,8 @@ class CoreMixin:
 
         # 도감 스크롤
         self.codex_scroll = 0
-
+        self.help_tab = 0
+        self.help_rects = []
         
         # =========================================================
         # 업적 데이터
@@ -190,15 +227,53 @@ class CoreMixin:
         self.update_achievement_popup(dt)
 
     def draw_help(self, screen):
-        screen.fill((10, 20, 35))
+        
+        screen.fill((20, 30, 50))
+
+        panel = pygame.Rect(80, 40, 860, 500)
+
+        pygame.draw.rect(screen, (40, 60, 90), panel)
+        pygame.draw.rect(screen, (120, 180, 255), panel, 4)
 
         title = font_medium.render("도움말", True, WHITE)
-        screen.blit(title, title.get_rect(center=(SCREEN_WIDTH // 2, 40)))
+        screen.blit(title, (470, 60))
 
-        pygame.draw.line(screen, (50, 50, 70), (40, 70), (SCREEN_WIDTH - 40, 70), 2)
+        self.help_rects = []
 
-        msg = font_small.render("준비중입니다.", True, LIGHT_GRAY)
-        screen.blit(msg, msg.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)))
+        for i, tab in enumerate(HELP_TABS):
 
-        close = font_tiny.render("[ESC] 닫기", True, GRAY)
-        screen.blit(close, close.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 25)))
+            rect = pygame.Rect(
+                110,
+                120 + i * 70,
+                180,
+                50
+            )
+
+            self.help_rects.append(rect)
+
+            if i == self.help_tab:
+                color = (100, 170, 255)
+            else:
+                color = (60, 90, 130)
+
+            pygame.draw.rect(screen, color, rect)
+
+            txt = font_small.render(tab, True, WHITE)
+            screen.blit(txt, (rect.x + 10, rect.y + 15))
+
+        y = 130
+
+        for line in HELP_CONTENT[self.help_tab]:
+
+            txt = font_small.render(line, True, WHITE)
+            screen.blit(txt, (340, y))
+
+            y += 35
+
+        close = font_tiny.render(
+            "[ESC] 닫기",
+            True,
+            LIGHT_GRAY
+        )
+
+        screen.blit(close, (100, 500))
