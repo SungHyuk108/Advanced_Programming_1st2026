@@ -1,59 +1,48 @@
+import os
 import pygame
 
 current_bgm = None
 
 
-def play_bgm(path, volume=0.4):
+def play_bgm(filename):
     global current_bgm
 
-    # 같은 음악이면 다시 재생 안함
-    if current_bgm == path:
+    # mixer 초기화
+    if not pygame.mixer.get_init():
+        pygame.mixer.init()
+
+    path = os.path.join(
+        os.path.dirname(__file__),
+        "music",
+        filename
+    )
+
+    # 같은 음악이 이미 재생 중이면 다시 재생하지 않음
+    if current_bgm == path and pygame.mixer.music.get_busy():
         return
 
     current_bgm = path
 
+    print("music path =", path)
+
     pygame.mixer.music.load(path)
-    pygame.mixer.music.set_volume(volume)
+    pygame.mixer.music.set_volume(1.0)
     pygame.mixer.music.play(-1)
 
-import pygame
-from game.display import init_display
+
+def stop_bgm():
+    global current_bgm
+    pygame.mixer.music.stop()
+    current_bgm = None
 
 
-def main():
-    pygame.init()
-    pygame.mixer.init()
-
-    init_display()
-
-    from game.loop import run
-    run()
+def pause_bgm():
+    pygame.mixer.music.pause()
 
 
-if __name__ == "__main__":
-    main()
+def unpause_bgm():
+    pygame.mixer.music.unpause()
 
-from game.audio import play_bgm
 
-def menu_screen():
-    play_bgm("game/assets/music/menu.mp3")
-
-    while True:
-        pass
-
-from game.audio import play_bgm
-
-def fishing_screen():
-    play_bgm("game/assets/music/fishing.mp3")
-
-    while True:
-        pass
-
-from game.audio import play_bgm
-
-def shop_screen():
-    play_bgm("game/assets/music/shop.mp3")
-
-    while True:
-        pass
-
+def set_volume(volume):
+    pygame.mixer.music.set_volume(volume)

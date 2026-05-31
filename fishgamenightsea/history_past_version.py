@@ -4,6 +4,8 @@ import math
 import os
 import sys
 
+from Advanced_Programming_1st2026.fishgamenightsea.game.audio import play_bgm
+
 pygame.init()
 
 # =========================================================
@@ -1303,22 +1305,19 @@ def main():
                     for i, rect in enumerate(button_rects):
                         if rect.collidepoint(event.pos):
                             game.state = menu_buttons[i]["scene"]
+
+                            if menu_buttons[i]["scene"] == STATE_IDLE:
+                                play_bgm("before.mp3")
+                                current_music = "before.mp3"
+
                             break
+
                 elif game.state in [STATE_SHOP_MAIN, STATE_SHOP_CATEGORY]:
                     game.handle_shop_click(event.pos)
-                elif game.state not in [STATE_COLLECTION, STATE_ACHIEVEMENT, STATE_INVENTORY]:
+
+                elif game.state not in [
+                    STATE_COLLECTION,
+                    STATE_ACHIEVEMENT,
+                    STATE_INVENTORY,
+                ]:
                     game.handle_action()
-
-        # ---------------------------------------------------
-        # 업데이트 & 그리기
-        # ---------------------------------------------------
-        game.update(dt, action_pressed)
-        game.draw(screen)
-        pygame.display.flip()
-
-    pygame.quit()
-    sys.exit()
-
-
-if __name__ == "__main__":
-    main()

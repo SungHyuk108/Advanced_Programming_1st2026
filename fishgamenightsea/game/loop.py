@@ -1,8 +1,8 @@
-"""메인 게임 루프 및 입력 처리."""
+"""Main game loop and input handling."""
 import sys
-
 import pygame
 
+from game.audio import play_bgm
 from game import title_ui
 from game.config import (
     FPS,
@@ -23,8 +23,13 @@ from game.title_ui import button_rects, menu_buttons
 def run():
     game = FishingGame()
     running = True
+    current_music = None
 
     while running:
+        if current_music is None:
+            play_bgm("title.mp3")
+            current_music = "title.mp3"
+
         dt = clock.tick(FPS) / 1000.0
 
         keys = pygame.key.get_pressed()
@@ -37,18 +42,11 @@ def run():
 
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    if game.state == STATE_INVENTORY:
-                        game.state = STATE_IDLE
-                    elif game.state == STATE_SHOP_CATEGORY:
-                        game.state = STATE_SHOP_MAIN
-                    elif game.state in [
-                        STATE_SHOP_MAIN,
-                        STATE_COLLECTION,
-                        STATE_ACHIEVEMENT,
-                        STATE_HELP,
-                    ]:
+                    if game.state == STATE_IDLE:
                         game.state = STATE_TITLE
-                    elif game.state != STATE_TITLE:
+                        play_bgm("title.mp3")
+                        current_music = "title.mp3"
+                    else:
                         game.state = STATE_TITLE
 
                 elif event.key == pygame.K_SPACE:
@@ -66,38 +64,34 @@ def run():
                     if game.state == STATE_IDLE:
                         game.state = STATE_INVENTORY
                     elif game.state == STATE_INVENTORY:
-                        game.state = STATE_IDLE
+                        game.state = STATE_TITLE
 
                 elif event.key == pygame.K_p:
                     if game.state == STATE_IDLE:
                         game.state = STATE_SHOP_MAIN
                     elif game.state in [STATE_SHOP_MAIN, STATE_SHOP_CATEGORY]:
-                        game.state = STATE_IDLE
+                        game.state = STATE_TITLE
 
                 elif event.key == pygame.K_s:
                     if game.state == STATE_INVENTORY:
                         game.sell_all_fish()
-                elif event.key == pygame.K_UP:
 
+                elif event.key == pygame.K_UP:
                     if game.state == STATE_COLLECTION:
                         game.codex_scroll = max(0, game.codex_scroll - 40)
-
                     elif game.state == STATE_ACHIEVEMENT:
                         game.achievement_scroll = max(0, game.achievement_scroll - 40)
 
                 elif event.key == pygame.K_DOWN:
-
                     if game.state == STATE_COLLECTION:
                         game.codex_scroll += 40
-
                     elif game.state == STATE_ACHIEVEMENT:
-
                         max_scroll = max(0, len(game.achievements) * 85 - 450)
-
                         game.achievement_scroll = min(
                             max_scroll,
                             game.achievement_scroll + 40
                         )
+
                 elif event.key in [
                     pygame.K_1,
                     pygame.K_2,
@@ -112,13 +106,19 @@ def run():
                 if game.state == STATE_TITLE and title_ui.show_menu:
                     for i, rect in enumerate(button_rects):
                         if rect.collidepoint(event.pos):
+                            if i == 0:
+                                play_bgm("before.mp3")
+                                current_music = "before.mp3"
+
                             game.state = menu_buttons[i]["scene"]
                             break
+
                     if title_ui.help_button_rect.collidepoint(event.pos):
                         game.state = STATE_HELP
 
                 elif game.state in [STATE_SHOP_MAIN, STATE_SHOP_CATEGORY]:
                     game.handle_shop_click(event.pos)
+
                 elif game.state not in [
                     STATE_COLLECTION,
                     STATE_ACHIEVEMENT,
