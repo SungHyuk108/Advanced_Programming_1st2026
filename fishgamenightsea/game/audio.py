@@ -2,7 +2,7 @@ import os
 import pygame
 
 current_bgm = None
-
+# s
 
 def play_bgm(filename):
     global current_bgm
