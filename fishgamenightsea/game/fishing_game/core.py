@@ -96,6 +96,8 @@ class CoreMixin:
 
         # 도감 스크롤
         self.codex_scroll = 0
+        
+        # 도움말 탭
         self.help_tab = 0
         self.help_rects = []
         
