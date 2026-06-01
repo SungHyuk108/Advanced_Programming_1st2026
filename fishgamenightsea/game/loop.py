@@ -2,11 +2,12 @@
 import sys
 import pygame
 
-from game.audio import play_bgm
+from game.audio import play_bgm, pop_bgm, push_bgm
 from game import title_ui
 from game.config import (
     FPS,
     STATE_ACHIEVEMENT,
+    STATE_CATCHING,
     STATE_COLLECTION,
     STATE_IDLE,
     STATE_INVENTORY,
@@ -24,6 +25,7 @@ def run():
     game = FishingGame()
     running = True
     current_music = None
+    prev_state = game.state
 
     while running:
         if current_music is None:
@@ -128,6 +130,21 @@ def run():
                     game.handle_action()
 
         game.update(dt, action_pressed)
+
+        if game.state != prev_state:
+            if game.state == STATE_CATCHING:
+                push_bgm("steel-citrus.mp3")
+                current_music = "steel-citrus.mp3"
+            elif prev_state == STATE_CATCHING:
+                pop_bgm()
+                if game.state == STATE_TITLE:
+                    play_bgm("title.mp3")
+                    current_music = "title.mp3"
+                else:
+                    current_music = "before.mp3"
+
+        prev_state = game.state
+
         game.draw(screen)
         pygame.display.flip()
 

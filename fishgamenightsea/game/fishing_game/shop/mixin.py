@@ -70,11 +70,29 @@ class ShopMixin:
 
         categories = ["미끼", "릴", "낚싯바늘", "낚싯줄", "가방"]
         btn_w, btn_h = 140, 45
-        sx = (SCREEN_WIDTH - btn_w) // 2
-        sy = 350
+        col_gap = 48
+        row_gap = 28
+        top_y = 350  # 맨 위 버튼(1번) 세로 위치 기준
+
+        grid_w = btn_w * 2 + col_gap
+        left_x = (SCREEN_WIDTH - grid_w) // 2
+        right_x = left_x + btn_w + col_gap
+        row1_y = top_y
+        row2_y = top_y + btn_h + row_gap
+        row3_y = row2_y + btn_h + row_gap
+
+        button_positions = [
+            (left_x, row1_y),                          # 1
+            (right_x, row1_y),                         # 2
+            (left_x, row2_y),                          # 3
+            (right_x, row2_y),                         # 4
+            (SCREEN_WIDTH // 2 - btn_w // 2, row3_y),  # 5
+        ]
+
         self.category_rects = []
         for i, cat in enumerate(categories):
-            rect = pygame.Rect(sx, sy + i * 55, btn_w, btn_h)
+            bx, by = button_positions[i]
+            rect = pygame.Rect(bx, by, btn_w, btn_h)
             self.category_rects.append((rect, cat))
             pygame.draw.rect(screen, (50, 40, 30), rect)
             pygame.draw.rect(screen, (80, 60, 40), (rect.x, rect.y, rect.width, 4))
