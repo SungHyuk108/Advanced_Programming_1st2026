@@ -121,6 +121,9 @@ def run():
                 elif game.state in [STATE_SHOP_MAIN, STATE_SHOP_CATEGORY]:
                     game.handle_shop_click(event.pos)
 
+                elif game.state == STATE_HELP:
+                    game.handle_help_click(event.pos)
+
                 elif game.state not in [
                     STATE_COLLECTION,
                     STATE_ACHIEVEMENT,

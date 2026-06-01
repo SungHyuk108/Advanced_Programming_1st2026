@@ -277,3 +277,9 @@ class CoreMixin:
         )
 
         screen.blit(close, (100, 500))
+
+    def handle_help_click(self, pos):
+        for i, rect in enumerate(self.help_rects):
+            if rect.collidepoint(pos):
+                self.help_tab = i
+                return
